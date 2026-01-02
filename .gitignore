@@ -115,5 +115,5 @@ coverage/
 **/lib/firebase_options.dart
 
 # ML Models (optional - uncomment if you want to exclude large model files)
-# *.tflite
-# *.mlmodel
+*.tflite
+*.mlmodel

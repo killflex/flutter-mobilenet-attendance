@@ -1,7 +1,10 @@
 import 'dart:io';
+import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
+import 'package:frimages/ML/Recognition.dart';
+import 'package:frimages/ML/Recognizer.dart';
 import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
 import 'package:image/image.dart' as img;
 import 'package:image_picker/image_picker.dart';
@@ -15,9 +18,11 @@ class RegistrationScreen extends StatefulWidget {
 
 class _HomePageState extends State<RegistrationScreen> {
   //TODO declare variables
-  late ImagePicker imagePicker;
   File? _image;
+  late ImagePicker imagePicker;
   late FaceDetector faceDetector;
+  late Recognizer recognizer;
+
   @override
   void initState() {
     // TODO: implement initState
@@ -29,6 +34,7 @@ class _HomePageState extends State<RegistrationScreen> {
     faceDetector = FaceDetector(options: options);
 
     //TODO initialize face recognizer
+    recognizer = Recognizer(numThreads: 2);
   }
 
   //TODO capture image using camera
@@ -58,18 +64,37 @@ class _HomePageState extends State<RegistrationScreen> {
   doFaceDetection() async {
     //TODO remove rotation of camera images
     _image = await removeRotation(_image!);
+
     InputImage inputImage = InputImage.fromFile(_image!);
     faces = await faceDetector.processImage(inputImage);
+
     for (Face face in faces) {
       final Rect boundingBox = face.boundingBox;
 
       print('Face found with bounding box:' + boundingBox.toString());
+
+      var bytes = await _image!.readAsBytes();
+      img.Image? tempImg = img.decodeImage(bytes)!;
+      faceImage = img.copyCrop(
+        tempImg,
+        x: boundingBox.left.toInt(),
+        y: boundingBox.top.toInt(),
+        width: boundingBox.width.toInt(),
+        height: boundingBox.height.toInt(),
+      );
+
+      Recognition recognition = await recognizer.recognize(
+        faceImage!,
+        boundingBox,
+      );
+      print('Embeddings: ' + recognition.embeddings.toString());
     }
-    await drawRectanglesOnImage();
+    drawRectanglesOnImage();
   }
 
   //TODO draw rectangles on image
   ui.Image? image;
+  img.Image? faceImage;
   drawRectanglesOnImage() async {
     var bytes = await _image!.readAsBytes();
     image = await decodeImageFromList(bytes);
@@ -79,11 +104,86 @@ class _HomePageState extends State<RegistrationScreen> {
     });
   }
 
+  //TODO Face Registration Dialogue
+  TextEditingController textEditingController = TextEditingController();
+  showFaceRegistrationDialogue(img.Image croppedFace, Recognition recognition) {
+    showDialog(
+      context: context,
+      builder:
+          (ctx) => AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
+            title: const Text("Face Registration", textAlign: TextAlign.center),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(100),
+                  child: Image.memory(
+                    Uint8List.fromList(img.encodePng(croppedFace)),
+                    width: 150,
+                    height: 150,
+                    fit: BoxFit.cover,
+                  ),
+                ),
+
+                const SizedBox(height: 20),
+                TextField(
+                  controller: textEditingController,
+                  decoration: const InputDecoration(
+                    labelText: 'Enter Name',
+                    filled: true,
+                    fillColor: Colors.white,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(10)),
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 20),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF1f4037),
+                    minimumSize: const Size(double.infinity, 40),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  onPressed: () {
+                    recognizer.registerFaceInDB(
+                      textEditingController.text,
+                      recognition.embeddings,
+                      Uint8List.fromList(img.encodeJpg(croppedFace)),
+                    );
+                    textEditingController.clear();
+                    Navigator.pop(context);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text("Face Registered")),
+                    );
+                  },
+                  child: const Text(
+                    "Register",
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+    );
+  }
+
   //TODO remove rotation of camera images
   removeRotation(File inputImage) async {
     final img.Image? capturedImage = img.decodeImage(
       await File(inputImage.path).readAsBytes(),
     );
+
     final img.Image orientedImage = img.bakeOrientation(capturedImage!);
     return await File(_image!.path).writeAsBytes(img.encodeJpg(orientedImage));
   }
@@ -140,6 +240,10 @@ class _HomePageState extends State<RegistrationScreen> {
                     18,
                   ), // Match inner clip radius
                   child:
+                      // faceImage != null
+                      //     ? Image.memory(
+                      //       Uint8List.fromList(img.encodePng(faceImage!)),
+                      //     )
                       image != null
                           ? FittedBox(
                             child: SizedBox(
