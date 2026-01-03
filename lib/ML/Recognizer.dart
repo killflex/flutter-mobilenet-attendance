@@ -91,15 +91,6 @@ class Recognizer {
     final id = await dbHelper.insert(row);
     print('inserted row id: $id');
   }
-  // void registerFaceInDB(String name, List<double> embedding) async {
-  //   // row to insert
-  //   Map<String, dynamic> row = {
-  //     DatabaseHelper.columnName: name,
-  //     DatabaseHelper.columnEmbedding: embedding.join(",")
-  //   };
-  //   final id = await dbHelper.insert(row);
-  //   print('inserted row id: $id');
-  // }
 
   Future<void> loadModel() async {
     try {
@@ -164,24 +155,28 @@ class Recognizer {
 
   //TODO  looks for the nearest embeeding in the database and returns the pair which contain information of registered face with which face is most similar
   Pair findNearest(List<double> emb) {
-    Pair pair = Pair("Unknown", -1);
+    Pair pair = Pair("Unknown", -5);
     for (MapEntry<String, Recognition> item in registered.entries) {
       final String name = item.key;
       List<double> knownEmb = item.value.embeddings;
 
       double dot = 0;
-      double normA = 0;
-      double normB = 0;
+      // double normA = 0;
+      // double normB = 0;
       for (int i = 0; i < emb.length; i++) {
-        dot += emb[i] * knownEmb[i];
-        normA += emb[i] * emb[i];
-        normB += knownEmb[i] * knownEmb[i];
+        // dot += emb[i] * knownEmb[i];
+        // normA += emb[i] * emb[i];
+        // normB += knownEmb[i] * knownEmb[i];
+
+        double diff = emb[i] - knownEmb[i];
+        dot += diff * diff;
       }
 
-      double similarity = dot / (sqrt(normA) * sqrt(normB));
+      // double similarity = dot / (sqrt(normA) * sqrt(normB));
+      double similarity = sqrt(dot); // Euclidean distance
 
       // Cosine similarity is between -1 and 1, where 1 means most similar
-      if (pair.distance == -1 || similarity > pair.distance) {
+      if (pair.distance == -5 || similarity < pair.distance) {
         pair.distance = similarity;
         pair.name = name;
       }

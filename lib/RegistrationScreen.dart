@@ -27,15 +27,16 @@ class _HomePageState extends State<RegistrationScreen> {
     super.initState();
     imagePicker = ImagePicker();
 
-    //TODO initialize face detector
-    final options = FaceDetectorOptions(enableClassification: true);
+    // initialize face detector
+    final options = FaceDetectorOptions(
+      enableClassification: true,
+      performanceMode: FaceDetectorMode.accurate,
+    );
     faceDetector = FaceDetector(options: options);
 
-    //TODO initialize face recognizer
     recognizer = Recognizer(numThreads: 2);
   }
 
-  //TODO capture image using camera
   _imgFromCamera() async {
     XFile? pickedFile = await imagePicker.pickImage(source: ImageSource.camera);
     if (pickedFile != null) {
@@ -45,7 +46,6 @@ class _HomePageState extends State<RegistrationScreen> {
     }
   }
 
-  //TODO choose image using gallery
   _imgFromGallery() async {
     XFile? pickedFile = await imagePicker.pickImage(
       source: ImageSource.gallery,
@@ -57,10 +57,9 @@ class _HomePageState extends State<RegistrationScreen> {
     }
   }
 
-  //TODO face detection code here
   List<Face> faces = [];
   doFaceDetection() async {
-    //TODO remove rotation of camera images
+    // remove rotation of camera images
     _image = await removeRotation(_image!);
 
     InputImage inputImage = InputImage.fromFile(_image!);
@@ -82,24 +81,22 @@ class _HomePageState extends State<RegistrationScreen> {
       );
 
       Recognition recognition = recognizer.recognize(faceImage!, boundingBox);
+      showFaceRegistrationDialogue(faceImage!, recognition);
       print('Embeddings: ${recognition.embeddings}');
     }
     drawRectanglesOnImage();
   }
 
-  //TODO draw rectangles on image
+  // draw rectangles on image
   ui.Image? image;
   img.Image? faceImage;
   drawRectanglesOnImage() async {
     var bytes = await _image!.readAsBytes();
     image = await decodeImageFromList(bytes);
-    setState(() {
-      image;
-      faces;
-    });
+    setState(() {});
   }
 
-  //TODO Face Registration Dialogue
+  // face registration dialog
   TextEditingController textEditingController = TextEditingController();
   showFaceRegistrationDialogue(img.Image croppedFace, Recognition recognition) {
     showDialog(
@@ -173,7 +170,7 @@ class _HomePageState extends State<RegistrationScreen> {
     );
   }
 
-  //TODO remove rotation of camera images
+  // remove rotation of camera images
   removeRotation(File inputImage) async {
     final img.Image? capturedImage = img.decodeImage(
       await File(inputImage.path).readAsBytes(),
@@ -218,7 +215,7 @@ class _HomePageState extends State<RegistrationScreen> {
                 height: MediaQuery.of(context).size.width / 1.15,
                 padding: const EdgeInsets.all(6),
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(24), // Rounded corners
+                  borderRadius: BorderRadius.circular(24),
                   gradient: const LinearGradient(
                     colors: [Color(0xFFffffff), Color(0xFFd4f7e6)],
                   ),
@@ -231,9 +228,7 @@ class _HomePageState extends State<RegistrationScreen> {
                   ],
                 ),
                 child: ClipRRect(
-                  borderRadius: BorderRadius.circular(
-                    18,
-                  ), // Match inner clip radius
+                  borderRadius: BorderRadius.circular(18),
                   child:
                       // faceImage != null
                       //     ? Image.memory(
@@ -257,8 +252,6 @@ class _HomePageState extends State<RegistrationScreen> {
               ),
 
               const SizedBox(height: 40),
-
-              // Buttons
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
@@ -283,7 +276,6 @@ class _HomePageState extends State<RegistrationScreen> {
     );
   }
 
-  // Reusable beautiful button
   Widget _gradientButton({
     required IconData icon,
     required String label,
