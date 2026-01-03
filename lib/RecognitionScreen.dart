@@ -7,7 +7,7 @@ import 'package:image/image.dart' as img;
 import 'package:image_picker/image_picker.dart';
 
 class RecognitionScreen extends StatefulWidget {
-  const RecognitionScreen({Key? key}) : super(key: key);
+  const RecognitionScreen({super.key});
 
   @override
   State<RecognitionScreen> createState() => _HomePageState();

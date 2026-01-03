@@ -15,8 +15,8 @@ class Recognizer {
   static const int HEIGHT = 160;
   static const int OUTPUT = 512;
   final dbHelper = DatabaseHelper();
-  Map<String, Recognition> registered = Map();
-  String get modelName => 'assets/mobile_face_net.tflite';
+  Map<String, Recognition> registered = {};
+  String get modelName => 'assets/facenet.tflite';
 
   Recognizer({int? numThreads}) {
     _interpreterOptions = InterpreterOptions();

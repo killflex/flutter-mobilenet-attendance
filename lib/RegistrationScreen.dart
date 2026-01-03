@@ -10,14 +10,13 @@ import 'package:image/image.dart' as img;
 import 'package:image_picker/image_picker.dart';
 
 class RegistrationScreen extends StatefulWidget {
-  const RegistrationScreen({Key? key}) : super(key: key);
+  const RegistrationScreen({super.key});
 
   @override
   State<RegistrationScreen> createState() => _HomePageState();
 }
 
 class _HomePageState extends State<RegistrationScreen> {
-  //TODO declare variables
   File? _image;
   late ImagePicker imagePicker;
   late FaceDetector faceDetector;
@@ -25,7 +24,6 @@ class _HomePageState extends State<RegistrationScreen> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     imagePicker = ImagePicker();
 
@@ -71,7 +69,7 @@ class _HomePageState extends State<RegistrationScreen> {
     for (Face face in faces) {
       final Rect boundingBox = face.boundingBox;
 
-      print('Face found with bounding box:' + boundingBox.toString());
+      print('Face found with bounding box:$boundingBox');
 
       var bytes = await _image!.readAsBytes();
       img.Image? tempImg = img.decodeImage(bytes)!;
@@ -83,11 +81,8 @@ class _HomePageState extends State<RegistrationScreen> {
         height: boundingBox.height.toInt(),
       );
 
-      Recognition recognition = await recognizer.recognize(
-        faceImage!,
-        boundingBox,
-      );
-      print('Embeddings: ' + recognition.embeddings.toString());
+      Recognition recognition = recognizer.recognize(faceImage!, boundingBox);
+      print('Embeddings: ${recognition.embeddings}');
     }
     drawRectanglesOnImage();
   }
@@ -123,8 +118,8 @@ class _HomePageState extends State<RegistrationScreen> {
                   borderRadius: BorderRadius.circular(100),
                   child: Image.memory(
                     Uint8List.fromList(img.encodePng(croppedFace)),
-                    width: 150,
-                    height: 150,
+                    width: 160,
+                    height: 160,
                     fit: BoxFit.cover,
                   ),
                 ),
