@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:frimages/RegisteredFacesScreen.dart';
 
 import 'RecognitionScreen.dart';
 import 'RegistrationScreen.dart';
@@ -98,12 +99,12 @@ class HomeScreen extends StatelessWidget {
                         label: 'Registered Faces',
                         icon: Icons.list_alt,
                         onPressed: () {
-                          // Navigator.push(
-                          //   context,
-                          //   MaterialPageRoute(
-                          //     builder: (_) => const RegisteredFacesScreen(),
-                          //   ),
-                          // );
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const RegisteredFacesScreen(),
+                            ),
+                          );
                         },
                       ),
                       const SizedBox(height: 40),

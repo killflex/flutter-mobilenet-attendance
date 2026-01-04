@@ -59,9 +59,7 @@ class _HomePageState extends State<RegistrationScreen> {
 
   List<Face> faces = [];
   doFaceDetection() async {
-    // remove rotation of camera images
     _image = await removeRotation(_image!);
-
     InputImage inputImage = InputImage.fromFile(_image!);
     faces = await faceDetector.processImage(inputImage);
 
@@ -87,7 +85,6 @@ class _HomePageState extends State<RegistrationScreen> {
     drawRectanglesOnImage();
   }
 
-  // draw rectangles on image
   ui.Image? image;
   img.Image? faceImage;
   drawRectanglesOnImage() async {
@@ -170,7 +167,6 @@ class _HomePageState extends State<RegistrationScreen> {
     );
   }
 
-  // remove rotation of camera images
   removeRotation(File inputImage) async {
     final img.Image? capturedImage = img.decodeImage(
       await File(inputImage.path).readAsBytes(),
@@ -227,13 +223,10 @@ class _HomePageState extends State<RegistrationScreen> {
                     ),
                   ],
                 ),
+
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(18),
                   child:
-                      // faceImage != null
-                      //     ? Image.memory(
-                      //       Uint8List.fromList(img.encodePng(faceImage!)),
-                      //     )
                       image != null
                           ? FittedBox(
                             child: SizedBox(
@@ -300,6 +293,7 @@ class _HomePageState extends State<RegistrationScreen> {
             ),
           ],
         ),
+
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [

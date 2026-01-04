@@ -11,9 +11,9 @@ import 'Recognition.dart';
 class Recognizer {
   late Interpreter interpreter;
   late InterpreterOptions _interpreterOptions;
-  static const int WIDTH = 160;
-  static const int HEIGHT = 160;
-  static const int OUTPUT = 512;
+  static const int inputWidth = 160;
+  static const int inputHeight = 160;
+  static const int outputSize = 512;
   final dbHelper = DatabaseHelper();
   Map<String, Recognition> registered = {};
   String get modelName => 'assets/facenet.tflite';
@@ -35,10 +35,9 @@ class Recognizer {
 
   void loadRegisteredFaces() async {
     final allRows = await dbHelper.queryAllRows();
-    // debugPrint('query all rows:');
     for (final row in allRows) {
-      //  debugPrint(row.toString());
       print(row[DatabaseHelper.columnName]);
+
       String name = row[DatabaseHelper.columnName];
       List<double> embd =
           row[DatabaseHelper.columnEmbedding]
@@ -46,6 +45,7 @@ class Recognizer {
               .map((e) => double.parse(e))
               .toList()
               .cast<double>();
+
       Recognition recognition = Recognition(
         row[DatabaseHelper.columnName],
         Rect.zero,
@@ -63,8 +63,7 @@ class Recognizer {
     img.Image? image = img.decodeImage(imageData);
     if (image == null) throw Exception('Image decoding failed');
 
-    // Resize to smaller dimensions if necessary
-    img.Image resized = img.copyResize(image, width: 300); // ~300px width
+    img.Image resized = img.copyResize(image, width: 300);
 
     int quality = 85; // Start with high quality
     Uint8List jpg;
@@ -103,8 +102,8 @@ class Recognizer {
   List<dynamic> imageToArray(img.Image inputImage) {
     img.Image resizedImage = img.copyResize(
       inputImage,
-      width: WIDTH,
-      height: HEIGHT,
+      width: inputWidth,
+      height: inputHeight,
     );
     List<double> flattenedList =
         resizedImage.data!
@@ -113,8 +112,8 @@ class Recognizer {
             .toList();
     Float32List float32Array = Float32List.fromList(flattenedList);
     int channels = 3;
-    int height = HEIGHT;
-    int width = WIDTH;
+    int height = inputHeight;
+    int width = inputWidth;
     Float32List reshapedArray = Float32List(1 * height * width * channels);
     for (int c = 0; c < channels; c++) {
       for (int h = 0; h < height; h++) {
@@ -126,7 +125,7 @@ class Recognizer {
         }
       }
     }
-    return reshapedArray.reshape([1, WIDTH, HEIGHT, 3]);
+    return reshapedArray.reshape([1, inputWidth, inputHeight, 3]);
   }
 
   Recognition recognize(img.Image image, Rect location) {
@@ -135,7 +134,7 @@ class Recognizer {
     print(input.shape.toString());
 
     //TODO output array
-    List output = List.filled(1 * OUTPUT, 0).reshape([1, OUTPUT]);
+    List output = List.filled(1 * outputSize, 0).reshape([1, outputSize]);
 
     //TODO performs inference
     final runs = DateTime.now().millisecondsSinceEpoch;
@@ -153,29 +152,20 @@ class Recognizer {
     return Recognition(pair.name, location, outputArray, pair.distance);
   }
 
-  //TODO  looks for the nearest embeeding in the database and returns the pair which contain information of registered face with which face is most similar
   Pair findNearest(List<double> emb) {
     Pair pair = Pair("Unknown", -5);
     for (MapEntry<String, Recognition> item in registered.entries) {
       final String name = item.key;
       List<double> knownEmb = item.value.embeddings;
-
       double dot = 0;
-      // double normA = 0;
-      // double normB = 0;
-      for (int i = 0; i < emb.length; i++) {
-        // dot += emb[i] * knownEmb[i];
-        // normA += emb[i] * emb[i];
-        // normB += knownEmb[i] * knownEmb[i];
 
+      for (int i = 0; i < emb.length; i++) {
         double diff = emb[i] - knownEmb[i];
         dot += diff * diff;
       }
 
-      // double similarity = dot / (sqrt(normA) * sqrt(normB));
       double similarity = sqrt(dot); // Euclidean distance
 
-      // Cosine similarity is between -1 and 1, where 1 means most similar
       if (pair.distance == -5 || similarity < pair.distance) {
         pair.distance = similarity;
         pair.name = name;

@@ -61,9 +61,7 @@ class _HomePageState extends State<RecognitionScreen> {
   doFaceDetection() async {
     recognitions.clear();
 
-    // remove rotation of camera images
     _image = await removeRotation(_image!);
-
     InputImage inputImage = InputImage.fromFile(_image!);
     faces = await faceDetector.processImage(inputImage);
 
@@ -83,16 +81,6 @@ class _HomePageState extends State<RecognitionScreen> {
       );
 
       Recognition recognition = recognizer.recognize(faceImage!, boundingBox);
-
-      // if (recognition.distance < 0) {
-      //   recognition.name = "Unknown";
-      //   print('Face not recognized. Distance: ${recognition.distance}');
-      // }
-
-      // recognitions.add(recognition);
-      // print(
-      //   'Recognized: ${recognition.name} with distance: ${recognition.distance}',
-      // );
 
       if (recognition.distance < 1 && recognition.distance >= 0) {
         recognitions.add(recognition);
@@ -171,13 +159,10 @@ class _HomePageState extends State<RecognitionScreen> {
                     ),
                   ],
                 ),
+
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(18),
                   child:
-                      // faceImage != null
-                      //     ? Image.memory(
-                      //       Uint8List.fromList(img.encodePng(faceImage!)),
-                      //     )
                       image != null
                           ? FittedBox(
                             child: SizedBox(
@@ -290,6 +275,7 @@ class FacePainter extends CustomPainter {
         ),
         text: recognition.name,
       );
+
       TextPainter tp = TextPainter(
         text: span,
         textAlign: TextAlign.left,
