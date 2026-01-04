@@ -16,7 +16,7 @@ This mobile application uses facial recognition to track attendance. It captures
 ## Technical Stack
 
 - Flutter for cross-platform mobile development
-- TensorFlow Lite (FaceNet/MobileFaceNet) for face recognition
+- TensorFlow Lite (FaceNet) for face recognition
 - Google ML Kit for face detection
 - SQLite for local data persistence
 - Camera and image picker integration
@@ -32,6 +32,7 @@ This mobile application uses facial recognition to track attendance. It captures
 ## Database Schema
 
 The app stores face data with the following structure:
+
 - ID (auto-increment)
 - Name
 - Face embedding (as text)
